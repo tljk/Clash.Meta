@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net"
 	"net/netip"
+	"sync"
 	"time"
 
 	"github.com/metacubex/mihomo/common/singledo"
@@ -34,11 +35,33 @@ type ifaceCache struct {
 
 var caches = singledo.NewSingle[*ifaceCache](time.Second * 20)
 
+var (
+	ifaceOverride   []net.Interface
+	ifaceOverrideMu sync.Mutex
+)
+
+func SetNetInterfaces(ifaces []net.Interface) {
+	ifaceOverrideMu.Lock()
+	ifaceOverride = ifaces
+	ifaceOverrideMu.Unlock()
+	FlushCache()
+}
+
 func getCache() (*ifaceCache, error) {
 	value, err, _ := caches.Do(func() (*ifaceCache, error) {
-		ifaces, err := anet.Interfaces()
-		if err != nil {
-			return nil, err
+		ifaceOverrideMu.Lock()
+		override := ifaceOverride
+		ifaceOverrideMu.Unlock()
+
+		var ifaces []net.Interface
+		var err error
+		if override != nil {
+			ifaces = override
+		} else {
+			ifaces, err = anet.Interfaces()
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		cache := &ifaceCache{
