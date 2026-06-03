@@ -11,6 +11,8 @@ import (
 	"github.com/metacubex/mihomo/component/iface/anet"
 
 	"github.com/metacubex/bart"
+
+	"github.com/metacubex/mihomo/constant/features"
 )
 
 type Interface struct {
@@ -55,7 +57,7 @@ func getCache() (*ifaceCache, error) {
 
 		var ifaces []net.Interface
 		var err error
-		if override != nil {
+		if features.OHOS {
 			ifaces = override
 		} else {
 			ifaces, err = anet.Interfaces()
