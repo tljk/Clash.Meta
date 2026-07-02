@@ -686,11 +686,6 @@ func ParseRawConfig(rawCfg *RawConfig) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	if dnsHijackRule, err2 := R.ParseRule("AND", "((NETWORK,UDP),(DST-PORT,53))", "dns", nil, subRules); err2 == nil {
-		rules = append([]C.Rule{RW.NewRuleWrapper(dnsHijackRule)}, rules...)
-	} else {
-		log.Errorln("[Config] failed to inject built-in DNS hijack rule: %s", err2)
-	}
 	config.Rules = rules
 
 	hosts, err := parseHosts(rawCfg)
@@ -877,7 +872,6 @@ func parseProxies(cfg *RawConfig) (proxies map[string]C.Proxy, providersMap map[
 	proxies["REJECT-DROP"] = adapter.NewProxy(outbound.NewRejectDrop())
 	proxies["COMPATIBLE"] = adapter.NewProxy(outbound.NewCompatible())
 	proxies["PASS"] = adapter.NewProxy(outbound.NewPass())
-	proxies["dns"] = adapter.NewProxy(outbound.NewDnsWithOption(outbound.DnsOption{Name: "dns"}))
 	proxyList = append(proxyList, "DIRECT", "REJECT")
 
 	// parse proxy
