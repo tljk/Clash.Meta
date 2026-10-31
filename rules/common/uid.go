@@ -17,7 +17,7 @@ type Uid struct {
 }
 
 func NewUid(oUid, adapter string) (*Uid, error) {
-	if !(runtime.GOOS == "linux" || runtime.GOOS == "android") {
+	if !(runtime.GOOS == "linux" || runtime.GOOS == "android" || runtime.GOOS == "openharmony") {
 		return nil, fmt.Errorf("uid rule not support this platform")
 	}
 
